@@ -1,0 +1,329 @@
+/* ============================================
+   SAMUEL BOZIO — poesias
+   Preto e branco. Clássico. Contínuo.
+   ============================================ */
+
+:root{
+  --bg:    #ffffff;
+  --ink:   #111111;
+  --dim:   #6b6b6b;
+  --line:  #111111;
+
+  --serif: Arial, Helvetica, sans-serif;
+  --sans:  Arial, Helvetica, sans-serif;
+}
+
+*{ box-sizing: border-box; }
+
+::selection{ background: #111111; color: #ffffff; }
+
+html, body{
+  margin:0; padding:0;
+  background: var(--bg);
+  color: var(--ink);
+  height: 100%;
+  overflow: hidden;
+}
+
+html{
+    cursor:none;
+}
+
+.cursor{
+    position:fixed;
+    width:18px;
+    height:18px;
+
+    border:1px solid #111;
+    border-radius:50%;
+
+    pointer-events:none;
+
+    transform:translate(-50%,-50%);
+    transition:
+        transform .15s ease,
+        width .2s ease,
+        height .2s ease,
+        background .2s ease;
+    z-index:9999;
+}
+
+.cursor.active{
+    width:32px;
+    height:32px;
+    background:rgba(0,0,0,.08);
+}
+
+body{
+  font-family: var(--serif);
+}
+
+a{
+  color: var(--ink);
+  text-decoration: underline;
+}
+a:hover{ color: var(--dim); }
+
+:focus-visible{
+  outline: 1px solid var(--ink);
+  outline-offset: 3px;
+}
+
+/* ---------- barra de progresso ---------- */
+.progress-track{
+  position: fixed; top:0; left:0; right:0;
+  height: 2px;
+  background: #dcdcdc;
+  z-index: 400;
+}
+.progress-fill{
+  height: 100%;
+  width: 0%;
+  background: var(--ink);
+}
+
+/* ---------- cabeçalho ---------- */
+.mark{
+  position: fixed;
+  top: 22px; left: 24px;
+  z-index: 300;
+  font-family: var(--sans);
+  line-height: 1.4;
+}
+.mark-name{
+  display:block;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  font-weight: bold;
+}
+.mark-sub{
+  display:block;
+  font-size: 10px;
+  color: var(--dim);
+  letter-spacing: 0.03em;
+}
+
+/* ---------- dica de rolagem ---------- */
+.nav-hint{
+  position: fixed;
+  bottom: 24px; right: 24px;
+  z-index: 300;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--ink);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  padding: 2px 0;
+  cursor: pointer;
+  transition: opacity 0.4s ease;
+}
+.nav-hint:hover{ color: var(--dim); border-color: var(--dim); }
+.nav-hint.hide{ opacity: 0; pointer-events:none; }
+
+/* ---------- trilho horizontal contínuo ---------- */
+.track{
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+.track::-webkit-scrollbar{ display:none; }
+
+.block{
+  position: relative;
+  flex: 0 0 auto;
+  height: 100vh;
+  display:flex;
+  flex-direction: column;
+  justify-content:center;
+  padding: 90px 64px;
+  border-right: 1px solid var(--line);
+}
+.block:last-child{ border-right: none; }
+
+/* ---------- bloco de abertura ---------- */
+.block--intro{
+  width: 46vw;
+  min-width: 380px;
+  max-width: 620px;
+}
+.eyebrow{
+  font-family: var(--sans);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--dim);
+  text-transform: uppercase;
+  margin: 0 0 26px;
+}
+.intro-title{
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: normal;
+  font-size: clamp(38px, 4.6vw, 62px);
+  line-height: 1.12;
+  margin: 0 0 30px;
+  color: var(--ink);
+}
+.intro-sub{
+  font-family: var(--serif);
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--dim);
+  margin: 0 0 40px;
+  max-width: 340px;
+}
+.rule{
+  display:block;
+  width: 60px;
+  height: 1px;
+  background: var(--ink);
+}
+
+/* ---------- bloco de poema ---------- */
+/* Garante que o bloco cresça horizontalmente e se adapte às colunas */
+.block--poem{
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+
+    flex: 0 0 100vw;
+    width:100vw;
+
+    overflow:hidden;
+
+    padding:90px 64px;
+}
+
+.verse-number {
+  flex: 0 0 auto;
+  font-family: var(--sans);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--dim);
+  display: block;
+  margin-bottom: 18px;
+}
+
+.poem-title {
+  flex: 0 0 auto;
+  font-family: var(--serif);
+  font-weight: normal;
+  font-style: normal;
+  font-size: clamp(24px, 2.6vw, 32px);
+  margin: 0 0 34px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line);
+  display: inline-block;
+}
+
+.poem-body{
+    flex:1;
+
+    height:calc(100vh - 220px);
+
+    columns:300px;
+    column-gap:64px;
+
+    overflow:hidden;
+}
+
+.poem-body p {
+  font-family: var(--serif);
+  font-size: 16px;
+  line-height: 1.85;
+  color: var(--ink);
+  margin: 0 0 26px;
+  break-inside: avoid-column;
+      page-break-inside: avoid;
+}
+
+.poem-body p:last-child { 
+  margin-bottom: 0; 
+}
+
+/* ---------- bloco sobre o autor ---------- */
+.block--about{
+  min-width: 560px;
+  flex-direction: row;
+  align-items: center;
+  gap: 56px;
+}
+.about-media{
+  flex: 0 0 auto;
+  height: 72vh;
+}
+.about-media img{
+  display:block;
+  height: 100%;
+  width: auto;
+  object-fit: contain;
+  filter: grayscale(1) contrast(1.05);
+}
+.about-copy{ max-width: 420px; }
+.about-title{
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: normal;
+  font-size: clamp(30px, 3.4vw, 40px);
+  margin: 6px 0 22px;
+}
+.about-text{
+  font-family: var(--serif);
+  font-size: 15px;
+  line-height: 1.75;
+  color: var(--dim);
+  margin: 0 0 16px;
+}
+.about-links{
+  font-family: var(--sans);
+  font-size: 12px;
+  margin-top: 18px;
+}
+
+/* ---------- responsivo ---------- */
+@media (max-width: 860px){
+  .block--intro{
+    width: 82vw;
+    min-width: 0;
+  }
+
+  .block--poem{
+    min-width: 0;
+  }
+
+  .poem-body{
+    column-width: 78vw;
+  }
+
+  .block--about{
+    min-width: 0;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+  }
+
+  /* Esconde a foto */
+  .about-media{
+    display: none;
+  }
+
+  /* Faz o texto ocupar toda a largura */
+  .about-copy{
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 520px){
+  .block{ padding: 80px 32px 60px; }
+  .mark{ top: 16px; left: 16px; }
+}
+
+@media (prefers-reduced-motion: reduce){
+  html{ scroll-behavior: auto; }
+}
