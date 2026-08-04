@@ -1,109 +1,124 @@
 (() => {
-  const track = document.getElementById('track');
   const progressFill = document.getElementById('progressFill');
   const navHint = document.getElementById('navHint');
 
-  /* ---------- roda do mouse move o scroll horizontal ---------- */
-  track.addEventListener('wheel', (e) => {
-    if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
-    e.preventDefault();
-    track.scrollLeft += e.deltaY;
-  }, { passive: false });
+  if (!progressFill) return;
 
-  /* ---------- arrastar com o mouse ---------- */
-  let isDown = false, startX = 0, startScroll = 0;
-  track.addEventListener('mousedown', (e) => {
-    isDown = true;
-    startX = e.pageX;
-    startScroll = track.scrollLeft;
-    track.style.cursor = 'grabbing';
-  });
-  window.addEventListener('mouseup', () => {
-    isDown = false;
-    track.style.cursor = '';
-  });
-  window.addEventListener('mousemove', (e) => {
-    if (!isDown) return;
-    track.scrollLeft = startScroll - (e.pageX - startX);
-  });
+  /* ---------- barra de progresso vertical ---------- */
 
-  /* ---------- setas do teclado: rolagem contínua, sem encaixe ---------- */
-  window.addEventListener('keydown', (e) => {
-    const step = track.clientWidth * 0.6;
-    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-      e.preventDefault();
-      track.scrollBy({ left: step, behavior: 'smooth' });
-    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-      e.preventDefault();
-      track.scrollBy({ left: -step, behavior: 'smooth' });
-    }
-  });
+  let ticking = false;
 
-  navHint.addEventListener('click', () => {
-    track.scrollBy({ left: track.clientWidth * 0.6, behavior: 'smooth' });
-  });
-
-  /* ---------- barra de progresso ---------- */
   function updateProgress() {
-    const max = track.scrollWidth - track.clientWidth;
-    const pct = max > 0 ? (track.scrollLeft / max) * 100 : 0;
-    progressFill.style.width = pct + '%';
+    const doc = document.documentElement;
+    const maxScroll = Math.max(0, doc.scrollHeight - window.innerHeight);
+    const scrollTop = window.scrollY || window.pageYOffset || 0;
+    const pct = maxScroll > 0
+      ? Math.min(100, Math.max(0, (scrollTop / maxScroll) * 100))
+      : 0;
 
-    if (track.scrollLeft > 40) {
-      navHint.classList.add('hide');
-    } else {
-      navHint.classList.remove('hide');
+    progressFill.style.width = `${pct}%`;
+
+    if (navHint) {
+      navHint.classList.toggle('hide', scrollTop > 80);
     }
+
+    ticking = false;
   }
 
-  track.addEventListener('scroll', () => {
-    window.requestAnimationFrame(updateProgress);
+  window.addEventListener('scroll', () => {
+    if (!ticking) {
+      window.requestAnimationFrame(updateProgress);
+      ticking = true;
+    }
   }, { passive: true });
 
+  window.addEventListener('resize', updateProgress, { passive: true });
+
   updateProgress();
-  window.addEventListener('resize', updateProgress);
-})();
 
-// Função ativada pelas zonas de clique (tap-prev e tap-next)
-function navSlide(direction) {
-    const slider = document.getElementById('slider');
-    
-    // Calcula a largura atual exata da tela (1 slide = 100vw)
-    const slideWidth = window.innerWidth; 
-    
-    // Rola o slider horizontalmente
-    // Se direction for -1, rola para a esquerda. Se for 1, rola para a direita.
-    slider.scrollBy({
-        left: slideWidth * direction,
+  /* ---------- botão de continuar ---------- */
+
+  if (navHint) {
+    navHint.addEventListener('click', () => {
+      window.scrollBy({
+        top: Math.round(window.innerHeight * 0.82),
         behavior: 'smooth'
+      });
     });
-}
+  }
 
-const cursor = document.createElement("div");
-cursor.className = "cursor";
-document.body.appendChild(cursor);
+  /* ---------- teclado ---------- */
 
-window.addEventListener("mousemove",(e)=>{
-    cursor.style.left = e.clientX+"px";
-    cursor.style.top = e.clientY+"px";
-});
+  window.addEventListener('keydown', (event) => {
+    // Não interfere enquanto o usuário estiver digitando.
+    const tag = document.activeElement?.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
 
-document.querySelectorAll("a,button").forEach(el=>{
-    el.addEventListener("mouseenter",()=>cursor.classList.add("active"));
-    el.addEventListener("mouseleave",()=>cursor.classList.remove("active"));
-});
+    const step = Math.round(window.innerHeight * 0.72);
 
-const isMobile = window.matchMedia("(max-width:860px)").matches;
+    if (event.key === 'ArrowDown' || event.key === 'PageDown') {
+      event.preventDefault();
+      window.scrollBy({ top: step, behavior: 'smooth' });
+    }
 
-if(!isMobile){
+    if (event.key === 'ArrowUp' || event.key === 'PageUp') {
+      event.preventDefault();
+      window.scrollBy({ top: -step, behavior: 'smooth' });
+    }
 
-    track.addEventListener('wheel',(e)=>{
-        if(Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
+    if (event.key === 'Home') {
+      event.preventDefault();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
 
-        e.preventDefault();
+    if (event.key === 'End') {
+      event.preventDefault();
+      window.scrollTo({
+        top: document.documentElement.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
+  });
 
-        track.scrollLeft += e.deltaY;
+  /* ---------- cursor minimalista apenas em desktops ---------- */
 
-    },{passive:false});
+  const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 
-}
+  if (finePointer) {
+    const cursor = document.createElement('div');
+    cursor.className = 'cursor';
+    document.body.appendChild(cursor);
+
+    let mouseX = 0;
+    let mouseY = 0;
+    let cursorX = 0;
+    let cursorY = 0;
+
+    window.addEventListener('mousemove', (event) => {
+      mouseX = event.clientX;
+      mouseY = event.clientY;
+    }, { passive: true });
+
+    function animateCursor() {
+      cursorX += (mouseX - cursorX) * 0.18;
+      cursorY += (mouseY - cursorY) * 0.18;
+
+      cursor.style.left = `${cursorX}px`;
+      cursor.style.top = `${cursorY}px`;
+
+      window.requestAnimationFrame(animateCursor);
+    }
+
+    animateCursor();
+
+    document.querySelectorAll('a, button').forEach((element) => {
+      element.addEventListener('mouseenter', () => {
+        cursor.classList.add('active');
+      });
+
+      element.addEventListener('mouseleave', () => {
+        cursor.classList.remove('active');
+      });
+    });
+  }
+})();
